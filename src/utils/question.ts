@@ -2,7 +2,6 @@ export default interface TObject {
   questionName: string;
   questionDescription: string;
   isRequired: boolean;
-  imageUrl?: string;
   type: 'text' | 'multiple' | 'linear' | 'file' | 'checkboxes';
   linearScale?: {
     max?: {

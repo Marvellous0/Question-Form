@@ -1,12 +1,10 @@
 'use client';
-import { IoCheckmark } from 'react-icons/io5';
 import Select, {
   StylesConfig,
 } from 'react-select';
 import { IDropdownProps } from '../utils/input';
 
 export default function BasicDropdown({
-  name,
   placeholder,
   options,
   isSearchable,
@@ -15,7 +13,7 @@ export default function BasicDropdown({
   useDefaultConfig = false,
 }: IDropdownProps) {
   const customStyles: StylesConfig = {
-    control: (base: any, state) => ({
+    control: (base: any) => ({
       ...base,
       border: 0,
       outline: '1px solid #CCE0DF',
@@ -28,23 +26,23 @@ export default function BasicDropdown({
       width: '180px',
       whiteSpace: 'nowrap',
     }),
-    option: (base: any, state) => ({
+    option: (base: any) => ({
       ...base,
       fontSize: '12px',
       whiteSpace: 'nowrap'
     }),
-    menu: (base: any, state) => ({
+    menu: (base: any) => ({
       ...base,
       position: 'absolute',
       whiteSpace: 'nowrap'
     }),
-    singleValue: (base: any, state) => ({
+    singleValue: (base: any) => ({
       ...base,
       color: '#00625F',
       fontSize: '14px',
       fontWeight: '500',
     }),
-    placeholder: (base: any, state) => ({
+    placeholder: (base: any) => ({
       ...base,
       color: '#00625F',
       fontSize: '14px',
@@ -78,7 +76,7 @@ export default function BasicDropdown({
       </div>
     );
   };
-  
+
 
   return (
     <Select

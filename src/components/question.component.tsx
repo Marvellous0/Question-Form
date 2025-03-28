@@ -3,7 +3,6 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { FaTrashCan } from "react-icons/fa6";
 import BasicDropdown from './dropdown';
 import { IInputOptions } from '../utils/input';
-import { LiaTimesSolid } from "react-icons/lia";
 import { FaToggleOn } from "react-icons/fa";
 import { FaToggleOff } from "react-icons/fa";
 import { BiMenuAltLeft } from "react-icons/bi";
@@ -12,31 +11,31 @@ import { MdLinearScale } from "react-icons/md";
 import { GrCheckboxSelected } from "react-icons/gr";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import axios from 'axios';
+import QuestionOptions from './question.option';
 
 interface QuestionProps {
-    question: TObject & { imageUrl?: string };
+    question: TObject;
     onDelete: () => void;
-    onUpdate: (question: TObject & { imageUrl?: string }) => void;
-    file: File | null;
-    setFile: Dispatch<SetStateAction<File | null>>;
+    onUpdate: (question: TObject) => void;
+    file: string | null;
+    setFile: Dispatch<SetStateAction<string | null>>;
 }
 
-const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpdate, file, setFile }) => {
+const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpdate, setFile }) => {
+    const [description, setDescription] = useState<string>(question.questionDescription || '');
+
     const [selectedType, setSelectedType] = useState({
         label: "Short answer",
         value: "text"
     });
-
-    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-    const [minLabel, setMinLabel] = useState<string>('Min');
-    const [maxLabel, setMaxLabel] = useState<string>('Max');
-
     const [filters, setFilters] = useState({
         status: null,
     });
     const [isRequired, setIsRequired] = useState<boolean>(question.isRequired);
-    const [minValue, setMinValue] = useState<number>(0);
-    const [maxValue, setMaxValue] = useState<number>(2);
+    const [minValue, setMinValue] = useState<number>(question.linearScale?.min?.value || 0);
+    const [maxValue, setMaxValue] = useState<number>(question.linearScale?.max?.value || 2);
+    const [minLabel, setMinLabel] = useState<string>(question.linearScale?.min?.label || '');
+    const [maxLabel, setMaxLabel] = useState<string>(question.linearScale?.max?.label || '');
     const minValueOptions: IInputOptions[] = [
         { label: '0', value: '0' },
         { label: '1', value: '1' }
@@ -46,6 +45,7 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
         label: `${i + 2}`,
         value: `${i + 2}`
     }));
+
 
     const [statusOptions] = useState<IInputOptions[]>([
         { label: 'Short answer', value: 'text', icon: <BiMenuAltLeft /> },
@@ -90,41 +90,14 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
         }
     };
 
-    const handleAddOption = () => {
-        const newOption = `Option ${question.options!.length + 1}`;
-        const newOptions = [...question.options!, newOption];
-        onUpdate({ ...question, options: newOptions });
-        setSelectedOptions((prevOptions) => [...prevOptions, newOption]);
-    };
-
-    const handleOptionChange = (option: any, index?: number) => {
-        if (index !== undefined) {
-            const newOptions = [...question.options!];
-            newOptions[index] = option;
-            onUpdate({ ...question, options: newOptions });
-        }
-        else {
-            setSelectedOptions((prevOptions) => [...prevOptions, option]);
-            onUpdate({ ...question });
-        }
-    };
-
-    const handleRemoveOption = (index: number) => {
-        const newOptions = [...question.options!];
-        newOptions.splice(index, 1);
-        onUpdate({ ...question, options: newOptions });
-    };
-
     const handleMinValueChange = (event: any) => {
         const selectedValue = parseInt(event.value);
+        setMinValue(selectedValue);
         onUpdate({
             ...question,
             linearScale: {
                 ...question.linearScale,
-                min: {
-                    value: selectedValue,
-                    label: question.linearScale?.min?.label! || 'Min',
-                }
+                min: { value: selectedValue, label: minLabel }
             }
         });
     };
@@ -136,14 +109,34 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
             ...question,
             linearScale: {
                 ...question.linearScale,
-                max: {
-                    value: selectedValue,
-                    label: question.linearScale?.max?.label! || 'Max',
-                }
+                max: { value: selectedValue, label: maxLabel }
             }
         });
     };
 
+    const handleMinLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const label = event.target.value;
+        setMinLabel(label);
+        onUpdate({
+            ...question,
+            linearScale: {
+                ...question.linearScale,
+                min: { value: minValue, label }
+            }
+        });
+    };
+
+    const handleMaxLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const label = event.target.value;
+        setMaxLabel(label);
+        onUpdate({
+            ...question,
+            linearScale: {
+                ...question.linearScale,
+                max: { value: maxValue, label }
+            }
+        });
+    };
 
     const handleToggleRequired = () => {
         const updatedQuestion = { ...question, isRequired: !isRequired };
@@ -159,8 +152,11 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
                     <input
                         type="text"
                         placeholder='Question'
-                        value={question.questionDescription || ''}
-                        onChange={(e) => onUpdate({ ...question, questionDescription: e.target.value })}
+                        value={description}
+                        onChange={(e) => {
+                            setDescription(e.target.value); 
+                            onUpdate({ ...question, questionDescription: e.target.value }); 
+                        }}
                         className="w-[500px] p-2 pl-5 text-sm text-[#a6a0a6] bg-[#f8f9fa] outline-none border-b-[1px] border-[#80868b] focus:border-[#a26000]"
                     />
                 </div>
@@ -183,64 +179,18 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
                     disabled
                 />
             ) :
-                selectedType?.value === 'multiple' ? (
-                    <div className="mb-4">
-                        {question.options?.map((option, index) => (
-                            <label key={`${option}-${index}`} className="block mb-2">
-                                <input
-                                    type="radio"
-                                    name={`a-${index}`} // Use a unique name for each group
-                                    value={option}
-                                    className="mr-2"
-                                />
-                                <input
-                                    type="text"
-                                    value={option}
-                                    onChange={(e) => handleOptionChange(e.target.value, index)}
-                                    // onClick={(e) => e.stopPropagation()}
-                                    className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                                />
-                                <button
-                                    onClick={() => handleRemoveOption(index)}
-                                    className="text-gray-500 hover:text-gray-800"
-                                >
-                                    <LiaTimesSolid size={15} />
-                                </button>
-                            </label>
-                        ))}
-                        {question?.options?.length == 0 && <label className="block mb-2">
-                            <input
-                                type="radio"
-                                name={`option-${0}`} // Use a unique name for each group
-                                value={''}
-                                className="mr-2"
-                            />
-                            <input
-                                type="text"
-                                value={''}
-                                onChange={(e) => handleOptionChange(e.target.value, 0)}
-                                className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                                placeholder='Option 1'
-                            />
-                        </label>}
-                        <input
-                            type="text"
-                            value={''}
-                            onChange={handleAddOption}
-                            className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                            placeholder='Add Other option'
-                        />
-                    </div>
+                (selectedType?.value === 'multiple' || selectedType?.value === 'checkboxes') ? (
+                    <QuestionOptions selectedType={selectedType} question={question} onUpdate={onUpdate} />
                 )
-
-                    : selectedType?.value === 'linear' ? (
+                    :
+                    selectedType?.value === 'linear' ? (
                         <>
-                            <div className="mb-4 flex items-center justify-between w-[20%]">
+                            <div className="mb-4 flex items-center justify-between w-[40%]">
                                 <BasicDropdown
                                     name="Min Value"
                                     placeholder="Select Min Value"
                                     options={minValueOptions}
-                                    value={minValue}
+                                    value={minValue.toString()}
                                     onChange={handleMinValueChange}
                                 />
                                 <span>to</span>
@@ -248,89 +198,43 @@ const QuestionComponent: React.FC<QuestionProps> = ({ question, onDelete, onUpda
                                     name="Max Value"
                                     placeholder="Select Max Value"
                                     options={maxValueOptions}
-                                    value={maxValue}
+                                    value={maxValue.toString()}
                                     onChange={handleMaxValueChange}
                                 />
                             </div>
-                            <div className='flex flex-col p-2 gap-6'>
-                                <div className='flex gap-5'>
+
+                            <div className="flex flex-col gap-6">
+                                <div className="flex gap-5 items-center">
                                     <span>{minValue}</span>
                                     <input
                                         type="text"
-                                        value={''}
+                                        value={minLabel}
+                                        onChange={handleMinLabelChange}
                                         placeholder="Label (optional)"
-                                        className="mr-2 outline-none w-[40%] border-b-[1px] border-[#80868b]"
+                                        className="w-[40%] border-b-[1px] border-gray-400 outline-none p-2"
                                     />
                                 </div>
 
-                                <div className='flex gap-5'>
+                                <div className="flex gap-5 items-center">
                                     <span>{maxValue}</span>
                                     <input
                                         type="text"
-                                        value={''}
+                                        value={maxLabel}
+                                        onChange={handleMaxLabelChange}
                                         placeholder="Label (optional)"
-                                        className="mr-2 outline-none w-[40%] border-b-[1px] border-[#80868b]"
+                                        className="w-[40%] border-b-[1px] border-gray-400 outline-none p-2"
                                     />
                                 </div>
                             </div>
                         </>
-                    ) :
-                        selectedType?.value === 'checkboxes' ? (
-                            <div className="mb-4">
-                                {question.options?.map((option, index) => (
-                                    <label key={`option-${index}`} className="block mb-2">
-                                        <input
-                                            type="checkbox"
-                                            name={`option-${index}`} // Use a unique name for each group
-                                            value={option}
-                                            className="mr-2"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={option}
-                                            onChange={(e) => handleOptionChange(e.target.value, index)}
-                                            // onClick={(e) => e.stopPropagation()}
-                                            className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                                        />
-                                        <button
-                                            onClick={() => handleRemoveOption(index)}
-                                            className="text-gray-500 hover:text-gray-800"
-                                        >
-                                            <LiaTimesSolid size={15} />
-                                        </button>
-                                    </label>
-                                ))}
-                                {question?.options?.length == 0 && <label className="block mb-2">
-                                    <input
-                                        type="checkbox"
-                                        name={`option-${0}`} // Use a unique name for each group
-                                        value={''}
-                                        className="mr-2"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={''}
-                                        onChange={(e) => handleOptionChange(e.target.value, 0)}
-                                        className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                                        placeholder='Option 1'
-                                    />
-                                </label>}
-                                <input
-                                    type="text"
-                                    value={''}
-                                    onChange={handleAddOption}
-                                    className="mr-2 outline-none w-[80%] hover:border-b-[1px] border-[#80868b] p-2"
-                                    placeholder='Add Other option'
-                                />
-                            </div>
-                        )
-                            : selectedType?.value === 'file' ? (
-                                <input
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    className="block w-full p-2 pl-10 text-sm text-gray-700"
-                                />
-                            ) : null}
+                    )
+                        : selectedType?.value === 'file' ? (
+                            <input
+                                type="file"
+                                onChange={handleFileChange}
+                                className="block w-full p-2 pl-10 text-sm text-gray-700"
+                            />
+                        ) : null}
 
             <div className='flex justify-end gap-5'>
                 <button onClick={handleToggleRequired} className='flex gap-2'>

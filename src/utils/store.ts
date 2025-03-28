@@ -22,7 +22,7 @@ const useStore = create<Store>((set, get) => ({
     set((state) => ({ questions: [...state.questions, question] }));
   },
   deleteQuestion: (index: number) => {
-    set((state) => ({ questions: state.questions.filter((question, i) => i !== index) }));
+    set((state) => ({ questions: state.questions.filter((_, i) => i !== index) }));
   },
   updateQuestion: (index: number, question: TObject) => {
     set((state) => ({ questions: state.questions.map((prevQuestion, i) => (i === index ? question : prevQuestion)) }));

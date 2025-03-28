@@ -1,0 +1,99 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PreviewPage > renders correctly 1`] = `
+<div>
+  <div
+    class="bg-[#fff0d9] h-[100vh] flex flex-col items-center justify-center"
+  >
+    <div
+      class="bg-white rounded shadow-lg p-6 min-w-[400px] w-[auto] h-auto"
+    >
+      <p>
+        Question 1
+         
+        <span
+          class="text-[red]"
+        >
+          *
+        </span>
+      </p>
+      <input
+        class="block w-[60%] bg-white pt-10 pb-2 text-sm text-gray-700 outline-none border-b-[1px]"
+        name="q1"
+        placeholder="Your answer"
+        type="text"
+        value=""
+      />
+      <div
+        class="mt-4 flex justify-between items-center"
+      >
+        <button
+          class="px-4 py-2  rounded bg-gray-300 text-gray-600"
+          disabled=""
+        >
+          Previous
+        </button>
+        <span>
+          1
+           of 
+          4
+        </span>
+        <button
+          class="px-4 py-2  rounded bg-[#ff9800] text-white"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`renders correctly 1`] = `
+<div>
+  <div
+    class="bg-[#fff0d9] h-[100vh] flex flex-col items-center justify-center"
+  >
+    <div
+      class="bg-white rounded shadow-lg p-6 min-w-[400px] w-[auto] h-auto"
+    >
+      <p>
+        Question 1
+         
+        <span
+          class="text-[red]"
+        >
+          *
+        </span>
+      </p>
+      <input
+        class="block w-[60%] bg-white pt-10 pb-2 text-sm text-gray-700 outline-none border-b-[1px]"
+        name="q1"
+        placeholder="Your answer"
+        type="text"
+        value=""
+      />
+      <div
+        class="mt-4 flex justify-between items-center"
+      >
+        <button
+          class="px-4 py-2  rounded bg-gray-300 text-gray-600"
+          disabled=""
+        >
+          Previous
+        </button>
+        <span>
+          1
+           of 
+          4
+        </span>
+        <button
+          class="px-4 py-2  rounded bg-[#ff9800] text-white"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

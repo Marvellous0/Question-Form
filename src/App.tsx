@@ -16,7 +16,7 @@ const App = () => {
   const addQuestion = useStore((state) => state.addQuestion);
   const deleteQuestion = useStore((state) => state.deleteQuestion);
   const updateQuestion = useStore((state) => state.updateQuestion);
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<string | null>(null);
 
 
   const handleAddQuestion = () => {
@@ -32,9 +32,6 @@ const App = () => {
   };
 
   console.log(file, "fie")
-  const handlePreviewQuestions = () => {
-    // window.open('/preview', '_blank'); // Open preview page in a new tab
-  };
 
   return (
     <div className='h-[100%] bg-[#fff0d9] '>
